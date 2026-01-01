@@ -168,7 +168,7 @@ async def chat(context):
 
     # Stream model output and forward tokens to Cycls UI/SSE
     stream = await client.chat.completions.create(
-        model="gpt-4o-mini", # model="gpt-5",
+        model="gpt-5.1",
         messages=messages,
         stream=True,
         temperature=0.7,
@@ -180,5 +180,4 @@ async def chat(context):
             yield token
 
 
-# agent.deploy(prod=False)
-agent.local(port=8080)
+agent.deploy(prod=False)
