@@ -28,7 +28,7 @@ Built using **Cycls**, the Distribution SDK for AI Agents.
 - Docker (installed and running)
 - An OpenAI API key
 
-## Deploying
+## Running Locally (Docker)
 
 ```bash
 pip install cycls
