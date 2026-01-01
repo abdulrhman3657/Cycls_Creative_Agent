@@ -166,7 +166,7 @@ async def chat(context):
     # Send system prompt + full chat history to the model
     messages = [{"role": "system", "content": SYSTEM_PROMPT}] + context.messages
 
-    # Stream model output and forward tokens to Cycls UI/SSE
+    # Stream model output
     stream = await client.chat.completions.create(
         model="gpt-5.1",
         messages=messages,
