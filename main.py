@@ -1,10 +1,10 @@
 import cycls
+import urllib.parse
 
 agent = cycls.Agent(
     pip=["openai"],
     copy=[".env"]
 )
-
 
 SYSTEM_PROMPT = """
 You are **Creative Agent** - a senior creative copywriter and creative strategist
@@ -147,11 +147,141 @@ In your very first reply:
 - One short welcoming line only.
 - Then request a **compact brief with 5 fields**.
 - No explanations. No filler.
-- No emojis
-""".strip()
+
+IMPORTANT OVERRIDE:
+If the user's first message already contains a structured brief
+(e.g., includes brand name, product description, audience, brand voice,
+and a campaign goal or publishing platform),
+DO NOT ask for the brief again.
+Instead:
+- Acknowledge briefly.
+- Immediately proceed to generate the full creative output
+  using the default output structure.
 
 
-@agent("my-chatbot", title="My Chatbot", auth=False)
+"""
+
+# ---------------------------
+# UI: Header + Example Cards
+# ---------------------------
+
+header = """
+<raw>
+<div class="max-w-7xl mx-auto my-10 p-6 md:p-8 bg-white border border-gray-200 rounded-2xl">
+  <div class="flex flex-col gap-3">
+    <div class="text-4xl font-extrabold text-gray-900">Creative Agent</div>
+    <div class="text-gray-600 text-base md:text-lg leading-relaxed">
+      شريكك الإبداعي لكتابة أفكار ونصوص تسويقية سعودية جاهزة للنشر — بسرعة وبدون تعقيد.
+    </div>
+  </div>
+</div>
+</raw>
+"""
+
+def _send_link(text: str) -> str:
+    return f"https://cycls.com/send/{urllib.parse.quote(text.strip())}"
+
+example_1 = """
+اسم العميل
+محفظتي
+
+وصف المنتج
+تطبيق محفظة رقمية يسهّل الدفع اليومي وتحويل الأموال بسرعة وأمان.
+
+الجمهور
+الشباب والموظفين في المدن السعودية اللي يستخدمون الدفع الإلكتروني بشكل يومي.
+
+صوت العلامة
+ذكي
+موثوق
+بسيط
+حديث
+
+المنصة
+إنستغرام + إعلانات تطبيق
+"""
+
+
+example_2 = """
+اسم العميل
+مقهى سحاب
+
+وصف المنتج
+قهوة مختصة محمصة محليًا مع خيارات باردة وحارة.
+
+الجمهور
+محبي القهوة في الرياض (طلاب وموظفين) اللي يحبون الجودة والتجربة السريعة.
+
+صوت العلامة
+راقي
+خفيف دم
+محلي
+واثق
+"""
+
+example_3 = """
+اسم العميل
+تطبيق وصلني
+
+وصف المنتج
+تطبيق توصيل سريع داخل الحي مع تتبع مباشر وسائقين معتمدين.
+
+الجمهور
+العائلات والموظفين في الرياض اللي يبغون توصيل سريع وموثوق.
+
+صوت العلامة
+عملي
+واضح
+سريع
+مطمئن
+"""
+
+example_4 = """
+اسم العميل
+نظيفها
+
+وصف المنتج
+خدمة تنظيف منازل سريعة مع حجز فوري وفرق موثوقة.
+
+الجمهور
+العائلات والموظفين في الرياض اللي يبغون بيت نظيف بدون تعب.
+
+صوت العلامة
+مريح
+موثوق
+قريب
+بسيط
+
+المنصة
+سناب شات + واتساب
+"""
+
+
+intro = f"""
+<div class="py-2">
+  <div class="text-center text-sm text-gray-500 mb-3">ابدأ بسرعة — اختر مثال جاهز</div>
+  <div class="flex flex-wrap gap-3 justify-center">
+    <a href="{_send_link(example_1)}"
+       class="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-sm hover:shadow-md hover:border-gray-400 transition-all whitespace-nowrap">
+      💳 مثال تطبيق محفظة
+    </a>
+    <a href="{_send_link(example_2)}"
+       class="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-sm hover:shadow-md hover:border-gray-400 transition-all whitespace-nowrap">
+      ☕ مثال مقهى
+    </a>
+    <a href="{_send_link(example_3)}"
+       class="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-sm hover:shadow-md hover:border-gray-400 transition-all whitespace-nowrap">
+      🚚 مثال توصيل
+    </a>
+    <a href="{_send_link(example_4)}"
+       class="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-sm hover:shadow-md hover:border-gray-400 transition-all whitespace-nowrap">
+      🧼 مثال خدمة تنظيف
+    </a>
+  </div>
+</div>
+"""
+
+@agent("creative-agent", title="Creative Agent", auth=False, header=header, intro=intro)
 async def chat(context):
     from openai import AsyncOpenAI
     from dotenv import load_dotenv
@@ -176,6 +306,5 @@ async def chat(context):
         token = chunk.choices[0].delta.content
         if token:
             yield token
-
 
 agent.deploy(prod=False)
